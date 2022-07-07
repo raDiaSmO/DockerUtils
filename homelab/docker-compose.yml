@@ -1,0 +1,33 @@
+version: "3"
+
+services:
+
+  #Disable systemd-resolved service and configure /etc/resolv.conf for the host before using ports 53
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    hostname: pihole
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "9090:80/tcp"
+    volumes:
+      - "./etc-pihole:/etc/pihole"
+      - "./etc-dnsmasq.d:/etc/dnsmasq.d"
+    restart: unless-stopped
+
+  nessus:
+    container_name: nessus
+    image: tenableofficial/nessus:latest
+    ports:
+      - "9934:8834"
+    restart: unless-stopped
+
+  nginx:
+    container_name: webserver
+    image: nginx:latest
+    ports:
+      - "6000:80"
+    volumes:
+      - "./src:/usr/share/nginx/html"
+    restart: unless-stopped
