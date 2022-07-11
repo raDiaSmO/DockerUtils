@@ -59,3 +59,14 @@ services:
       - "./splunk/var:/opt/splunk/var"
       - "./splunk/import:/opt/splunk/import"
     restart: unless-stopped
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:latest
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./portainer/portainer-data:/data"
+    ports:
+      - "9000:9000/tcp"
+    restart: unless-stopped
