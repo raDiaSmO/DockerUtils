@@ -8,16 +8,16 @@ services:
     image: pihole/pihole:latest
     hostname: pihole
     env_file:
-      - ".env"
+      - '.env'
     environment:
       WEBPASSWORD: ${PIHOLE_PASSWORD}
     ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "9090:80/tcp"
+      - '53:53/tcp'
+      - '53:53/udp'
+      - '9090:80/tcp'
     volumes:
-      - "./pihole/etc-pihole:/etc/pihole"
-      - "./pihole/etc-dnsmasq.d:/etc/dnsmasq.d"
+      - './pihole/etc-pihole:/etc/pihole'
+      - './pihole/etc-dnsmasq.d:/etc/dnsmasq.d'
     restart: unless-stopped
 
   nessus:
@@ -25,13 +25,13 @@ services:
     image: tenableofficial/nessus:latest
     hostname: nessus
     env_file:
-      - ".env"
+      - '.env'
     environment:
       USERNAME: ${NESSUS_USERNAME}
       PASSWORD: ${NESSUS_PASSWORD}
       ACTIVATION_CODE: ${NESSUS_ACTIVATION_CODE}
     ports:
-      - "8834:8834/tcp"
+      - '8834:8834/tcp'
     restart: unless-stopped
 
   splunk:
@@ -39,19 +39,19 @@ services:
     image: splunk/splunk:latest
     hostname: splunk
     env_file:
-      - ".env"
+      - '.env'
     environment:
       - SPLUNK_START_ARGS:${SPLUNK_START_ARGS}
       - SPLUNK_PASSWORD:${SPLUNK_PASSWORD}
     ports:
-      - "8000:8000/tcp"
-      - "9997:9997/tcp"
-      - "8088:8088/tcp"
-      - "1514:1514/tcp"
+      - '8000:8000/tcp'
+      - '9997:9997/tcp'
+      - '8088:8088/tcp'
+      - '1514:1514/tcp'
     volumes:
-      - "./splunk/etc:/opt/splunk/etc"
-      - "./splunk/var:/opt/splunk/var"
-      - "./splunk/import:/opt/splunk/import"
+      - './splunk/etc:/opt/splunk/etc'
+      - './splunk/var:/opt/splunk/var'
+      - './splunk/import:/opt/splunk/import'
     restart: unless-stopped
 
   portainer:
@@ -59,11 +59,11 @@ services:
     image: portainer/portainer-ce:latest
     hostname: portainer
     volumes:
-      - "/etc/localtime:/etc/localtime:ro"
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./portainer/portainer-data:/data"
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+      - './portainer/portainer-data:/data'
     ports:
-      - "9000:9000/tcp"
+      - '9000:9000/tcp'
     restart: unless-stopped
 
   ansible:
@@ -72,8 +72,8 @@ services:
     hostname: ansible
     user: root
     volumes:
-      - "./ansible/hosts:/etc/ansible/hosts"
-      - "./ansible:/root/ansible/files"
+      - './ansible/hosts:/etc/ansible/hosts'
+      - './ansible:/root/ansible/files'
     command:  /bin/bash -c 
       "echo 'nameserver 8.8.8.8' > /etc/resolv.conf 
       && apt-get update
