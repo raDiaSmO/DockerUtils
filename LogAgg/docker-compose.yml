@@ -1,0 +1,80 @@
+version: "3"
+
+services:  
+
+  elasticsearch:
+    container_name: elasticsearch
+    image: elasticsearch:${ELK_STACK_VERSION}
+    hostname: elasticsearch
+    env_file:
+      - '.env'
+    environment:
+      - 'discovery.type=single-node'
+      - 'xpack.monitoring.collection.enabled=true'
+      - 'cluster.name=HomeLabSiem'
+      - 'ELASTIC_PASSWORD=${ELASTIC_PASSWORD}'
+      - 'ES_JAVA_OPTS:-Xms4gb -Xmx4gb'
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/etc/timezone:/etc/timezone:ro'
+      - 'elastic_data:/usr/share/elasticsearch/data'
+    networks:
+      - elk-net
+    ports:
+      - '${ELASTIC_PORT}:9200/tcp'
+    restart: always
+
+  kibana:
+    container_name: kibana
+    image: kibana:${ELK_STACK_VERSION}
+    hostname: kibana
+    env_file:
+      - '.env'    
+    environment:
+      - 'SERVERNAME=kibana'
+      - 'ELASTICSEARCH_HOSTS=${ELASTIC_HOST}'
+      - 'ELASTICSEARCH_USERNAME=${KIBANA_USERNAME}'
+      - 'ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}'
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/etc/timezone:/etc/timezone:ro'
+      - 'kibana_data:/usr/share/kibana/data'   
+    networks:
+      - elk-net
+    depends_on:
+      - elasticsearch
+    ports:
+      - '${KIBANA_PORT}:5601/tcp'
+    restart: always
+
+  splunk:
+    container_name: splunk
+    image: splunk/splunk:latest
+    hostname: splunk
+    env_file:
+      - '.env'
+    environment:
+      - 'SPLUNK_START_ARGS:${SPLUNK_START_ARGS}'
+      - 'SPLUNK_PASSWORD:${SPLUNK_PASSWORD}'
+    ports:
+      - '8000:8000/tcp'
+      - '9997:9997/tcp'
+      - '8088:8088/tcp'
+      - '1514:1514/tcp'
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/etc/timezone:/etc/timezone:ro'
+      - './splunk_data/etc:/opt/splunk/etc'
+      - './splunk_data/var:/opt/splunk/var'
+      - './splunk_data/import:/opt/splunk/import'
+    restart: always
+
+networks:
+  elk-net:
+    driver: bridge
+
+volumes:
+  elastic_data:
+    driver: local
+  kibana_data:
+    driver: local

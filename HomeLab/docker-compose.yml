@@ -1,0 +1,107 @@
+version: "3"
+
+services:
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    hostname: pihole
+    env_file:
+      - '.env'
+    environment:
+      WEBPASSWORD: '${PIHOLE_PASSWORD}'
+    ports:
+      - '53:53/tcp'
+      - '53:53/udp'
+      - '9090:80/tcp'
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/etc/timezone:/etc/timezone:ro'
+      - './pihole_data/etc-pihole:/etc/pihole'
+      - './pihole_data/etc-dnsmasq.d:/etc/dnsmasq.d'
+    restart: always
+
+  ansible:
+    container_name: ansible
+    image: ubuntu:latest
+    hostname: ansible
+    user: root
+    volumes:
+      - './ansible:/root/ansible/files'
+    command:  /bin/bash -c 
+      "apt-get update && apt-get install ansible ssh sshpass vim netplan.io net-tools -y && service ssh start &&
+      ssh-keygen -b 4096 -t rsa -N '' -f '/root/.ssh/id_rsa' <<<y &&
+      tail -f /dev/null" #Keep the container running
+    restart: always   
+
+  nessus:
+    container_name: nessus
+    image: tenableofficial/nessus:latest
+    hostname: nessus
+    env_file:
+      - '.env'
+    environment:
+      USERNAME: ${NESSUS_USERNAME}
+      PASSWORD: ${NESSUS_PASSWORD}
+      ACTIVATION_CODE: ${NESSUS_ACTIVATION_CODE}
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/etc/timezone:/etc/timezone:ro'
+    ports:
+      - '8834:8834/tcp'
+    restart: always
+    
+  plex:
+    container_name: plex
+    image: plexinc/pms-docker:latest
+    env_file:
+      - '.env'
+    environment:
+     - 'TZ=Canada/Eastern'
+     - 'HOSTNAME=plex'
+     - 'ADVERTISE_IP=${PLEX_ADVERTISE_IP}'
+    network_mode: host
+    volumes:
+      - '/opt/plexmedia1/config:/config'
+      - '/opt/plexmedia1/transcode:/transcode'
+      - '/opt/plexmedia1:/opt/plexmedia1:ro'
+      - '/opt/plexmedia2:/opt/plexmedia2:ro'
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/etc/timezone:/etc/timezone:ro'      
+    restart: always    
+
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    hostname: nginx
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/etc/timezone:/etc/timezone:ro'
+    ports:
+     - '8070:80/tcp'
+    restart: always
+
+  dashy:
+    image: lissy93/dashy:latest
+    container_name: dashy
+    hostname: dashy
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/etc/timezone:/etc/timezone:ro'
+      - './dashy/conf.yml:/app/public/conf.yml:ro'
+    ports:
+      - '4000:80/tcp'
+    restart: always        
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:latest
+    hostname: portainer
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/etc/timezone:/etc/timezone:ro'
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+      - './portainer_data:/data'
+    ports:
+      - '9000:9000/tcp'
+    restart: always
